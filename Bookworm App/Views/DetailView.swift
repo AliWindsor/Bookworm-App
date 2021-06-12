@@ -12,6 +12,10 @@ struct DetailView: View {
     
     let book: Book
     
+    @Environment(\.managedObjectContext) var moc
+    @Environment(\.presentationMode) var presentationMode
+    @State private var showingDeleteAlert = false
+    
     var body: some View {
         GeometryReader { geometry in
             VStack {
@@ -38,13 +42,48 @@ struct DetailView: View {
 
                 RatingView(rating: .constant(Int(self.book.rating)))
                     .font(.largeTitle)
+                
+                Text("Date Read: \(self.book.dateAdded ?? Date(), formatter: bookDateFormatter)")
+                    .padding()
 
                 Spacer()
                 
             }
         }
         .navigationBarTitle(Text(book.title ?? "Unknown Book"), displayMode: .inline)
+        .navigationBarItems(trailing: Button(action: {
+                                self.showingDeleteAlert = true
+                            }) {
+                                Image(systemName: "trash")
+                            })
+        .alert(isPresented: $showingDeleteAlert){
+            Alert(title:Text("Delete Book"),
+                  message: Text("Are you sure you want to delete this book?"),
+                  primaryButton: .destructive(Text("Delete")){
+                    self.deleteBook()},
+                  secondaryButton: .cancel()
+            )
+        }
     }
+    
+    func deleteBook(){
+        
+        moc.delete(book) //delete item from context
+        do{
+            try moc.save() //save new context
+        }catch{
+            print(error)
+        }
+        
+        presentationMode.wrappedValue.dismiss()
+    }
+    
+    let bookDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        return formatter
+    }()
+    
 }
 
 struct DetailView_Previews: PreviewProvider {

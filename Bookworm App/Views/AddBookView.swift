@@ -17,6 +17,8 @@ struct AddBookView: View {
     @State private var rating = 0
     @State private var genre = ""
     @State private var review = ""
+    @State private var fieldError = false
+    @State private var dateRead = Date()
     
     let genres = ["Fantasy", "Horror", "Kids", "Mystery", "Poetry", "Romance", "Thriller"]
 
@@ -44,7 +46,17 @@ struct AddBookView: View {
                 }
                 
                 Section{
+                    DatePicker("Date Read", selection: $dateRead, displayedComponents: .date)
+                }
+                
+                Section{
                     Button ("Save"){
+                        
+                        if genre.isEmpty || title.isEmpty || author.isEmpty {
+                            self.genreError = true
+                            
+                        }else{
+                            
                         let newBook = Book(context: self.moc)
                         
                         newBook.title = self.title
@@ -52,6 +64,7 @@ struct AddBookView: View {
                         newBook.rating = Int16(self.rating)
                         newBook.genre = self.genre
                         newBook.review = self.review
+                        newBook.dateAdded = self.dateRead
                         
                         do{
                             try self.moc.save()
@@ -60,6 +73,7 @@ struct AddBookView: View {
                         }
                         
                         self.presentationMode.wrappedValue.dismiss()
+                        }
 
                     }
                 }
@@ -68,7 +82,14 @@ struct AddBookView: View {
 
             .navigationBarTitle("Add A Book")
         }
+        .alert(isPresented: $fieldError){
+            Alert(title:Text("Empty fields"),
+                  message: Text("You have have left one or more fields empty, please check your details and try again."),
+                  dismissButton: .default(Text("Ok"))
+            )
+        }
         
     }
+   
 }
 
