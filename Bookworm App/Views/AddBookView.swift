@@ -53,7 +53,7 @@ struct AddBookView: View {
                     Button ("Save"){
                         
                         if genre.isEmpty || title.isEmpty || author.isEmpty {
-                            self.genreError = true
+                            self.fieldError = true
                             
                         }else{
                             
